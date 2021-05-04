@@ -81,15 +81,21 @@ async function getProductById(event) {
 @param event: {tags}
 */
 async function getProductByTags(event) {
-  const { tags } = event;
+  const { tags } = event.queryStringParameters;
 
   const params = {
-    FilterExpression: `contains (tags, ${tags})`,
-    TableName: TABLE_NAME
+    FilterExpression: "contains(#tags, :tags)",
+    TableName: TABLE_NAME,
+    ExpressionAttributeNames: {
+      "#tags": "tags",
+    },
+    ExpressionAttributeValues: {
+        ":tags": tags,
+    } 
   };
   try {
     const response = await db 
-    .batchGet(params)
+    .scan(params)
     .promise();
 
     return {
